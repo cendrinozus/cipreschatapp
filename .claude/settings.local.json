@@ -13,7 +13,9 @@
       "PowerShell(python -m pip install \"ollama==0.4.4\" \"langchain>=0.3.0\" \"langchain-community>=0.3.0\" \"langchain-text-splitters>=0.3.0\" 2>&1)",
       "PowerShell(python -m pip install \"chromadb==0.6.3\" 2>&1)",
       "Bash(grep -E \"\\\\.\\(py|js|jsx|ts|tsx|json|css|html\\)$\")",
-      "WebFetch(domain:parc-auto.lacipres.org)"
+      "WebFetch(domain:parc-auto.lacipres.org)",
+      "Bash(find \"C:\\\\Users\\\\knyanda\\\\Documents\\\\Projets\\\\parc-auto\\\\parc-auto\" -type f -name \"Dockerfile*\" -o -name \"docker-compose*\" -o -name \".env*\" -o -name \"nginx*\" | head -20)",
+      "Read(//c/Users/knyanda/Documents/Projets/parc-auto/parc-auto/**)"
     ]
   }
 }

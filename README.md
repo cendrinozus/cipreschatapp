@@ -1,8 +1,8 @@
-# CIPRESCHATAPP — RAG avec Ollama + Mistral
+# CIPRESCHATAPP — RAG avec Ollama + Mistral Nemo
 
-Stack : Flask · React.js · Apache · MySQL · ChromaDB · Ollama (Mistral 7B)
+Stack : Flask · React.js · Apache · MySQL · ChromaDB · Ollama (Mistral Nemo 12B)
 
-## Prérequis (Windows)
+## Prérequis (Windows — mode dev)
 
 | Outil | Version min. | Lien |
 |---|---|---|
@@ -35,6 +35,7 @@ Ouvrir **3 terminaux PowerShell** séparés :
 
 ```powershell
 # Terminal 1 — Ollama
+ollama pull mistral-nemo   # première fois uniquement (~7 Go)
 ollama serve
 
 # Terminal 2 — Backend Flask
@@ -68,40 +69,120 @@ Accès : http://localhost:3000 (direct) ou http://localhost (via Apache)
 
 4. Redémarrer Apache (via `services.msc` ou le panneau XAMPP).
 
+---
+
+## Déploiement production (Docker)
+
+### Prérequis
+
+| Outil | Version min. | Notes |
+|---|---|---|
+| Docker Engine | 24+ | Linux ou Docker Desktop Windows (backend WSL2) |
+| Docker Compose | v2+ | Inclus dans Docker Desktop |
+
+> **RAM recommandée :** 16 Go minimum (Mistral Nemo 12B en CPU-only) · 8 Go VRAM si GPU NVIDIA.
+
+### Compatibilité Windows
+
+Le déploiement fonctionne sur **Docker Desktop Windows** (backend WSL2) sans modification.
+
+Points de vigilance spécifiques Windows :
+- Utiliser **PowerShell** ou le terminal intégré de Docker Desktop (pas cmd.exe)
+- Le dossier `ssl\` (certificats) est un chemin relatif au projet — fonctionne tel quel
+- Pour le GPU Ollama sous Windows, installer [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) et activer le support GPU dans Docker Desktop > Settings > Resources > GPU
+
+### Démarrage
+
+```bash
+# 1. Copier et adapter les variables d'environnement
+cp .env.example .env        # Linux / macOS
+copy .env.example .env      # Windows (cmd / PowerShell)
+# Éditer .env : changer SECRET_KEY, JWT_SECRET_KEY et les mots de passe MySQL
+
+# 2. Construire et démarrer tous les services
+docker compose up -d --build
+```
+
+Le backend attend automatiquement que MySQL et Ollama soient prêts, puis télécharge `mistral-nemo` et `nomic-embed-text` au premier démarrage (**opération longue ~7 Go**).
+
+### Services exposés
+
+| Service | URL | Description |
+|---|---|---|
+| Frontend | https://chatbot.lacipres.org | Interface React (HTTPS) |
+| Backend API | https://chatbot.lacipres.org/api | Flask via proxy Apache |
+| phpMyAdmin | http://\<hôte\>:8181 | Administration MySQL |
+| Ollama | http://\<hôte\>:11434 | API LLM (interne) |
+
+### SSL en production
+
+Le frontend génère un certificat auto-signé au build (utilisable pour les tests). Pour utiliser un vrai certificat, créer le dossier `ssl\` à la racine du projet et y placer vos fichiers :
+
+```
+ssl\
+├── cipreschatapp.crt
+└── cipreschatapp.key
+```
+
+Docker Desktop monte ce dossier dans le conteneur, remplaçant le certificat auto-signé. Fonctionne identiquement sous Linux et Windows.
+
+### Commandes utiles
+
+```bash
+# Voir les logs en temps réel
+docker compose logs -f backend
+
+# Arrêter sans supprimer les volumes
+docker compose down
+
+# Supprimer également les données (MySQL, ChromaDB, uploads, modèles Ollama)
+docker compose down -v
+```
+
+---
+
 ## Structure du projet
 
 ```
 CIPRESCHATAPP\
+├── docker-compose.yml           # Orchestration production (5 services)
+├── .env.example                 # Variables Docker à copier en .env
+├── mysql\
+│   └── init.sql                 # Initialisation charset MySQL
 ├── backend\
 │   ├── app\
-│   │   ├── routes\         # auth.py, chat.py, documents.py, admin.py
-│   │   ├── models\         # user.py, session.py, message.py
-│   │   ├── services\       # rag.py, embedder.py, llm.py, ingestor.py
-│   │   └── utils\          # auth_utils.py, file_utils.py
-│   ├── uploads\            # Documents téléversés
-│   ├── chroma_db\          # Base vectorielle persistée
+│   │   ├── routes\              # auth.py, chat.py, documents.py, admin.py
+│   │   ├── models\              # user.py, session.py, message.py
+│   │   ├── services\            # rag.py, embedder.py, llm.py, ingestor.py
+│   │   └── utils\               # auth_utils.py, file_utils.py
+│   ├── uploads\                 # Documents téléversés
+│   ├── chroma_db\               # Base vectorielle persistée
+│   ├── Dockerfile
+│   ├── entrypoint.sh            # Attente MySQL/Ollama, pull modèles, Gunicorn
 │   ├── config.py
 │   ├── run.py
 │   └── requirements.txt
 ├── frontend\
 │   ├── src\
-│   │   ├── components\     # ChatWindow, MessageBubble, UploadPanel...
-│   │   ├── pages\          # LoginPage, ChatPage, AdminPage
-│   │   ├── hooks\          # useChat, useAuth
-│   │   ├── services\       # api.js
-│   │   └── context\        # AuthContext.jsx
+│   │   ├── components\          # ChatWindow, MessageBubble, UploadPanel...
+│   │   ├── pages\               # LoginPage, ChatPage, AdminPage
+│   │   ├── hooks\               # useChat, useAuth
+│   │   ├── services\            # api.js
+│   │   └── context\             # AuthContext.jsx
+│   ├── Dockerfile
+│   ├── cipreschatapp.conf       # VirtualHost Apache production (HTTPS + SPA)
 │   ├── package.json
 │   └── vite.config.js
 ├── apache\
-│   └── cipreschatapp-dev.conf   # VirtualHost dev
+│   └── cipreschatapp-dev.conf   # VirtualHost dev (WampServer / XAMPP)
 └── scripts\
     ├── setup_dev.ps1            # Script d'installation Windows
-    └── init_db.sql
+    └── init_db.sql              # Init base de données (dev)
 ```
 
 ## Variables d'environnement
 
-Copier `backend\.env.example` → `backend\.env` et renseigner :
+### Dev — `backend\.env`
 
 ```
 SECRET_KEY=changeme
@@ -111,10 +192,21 @@ MYSQL_USER=chatbot
 MYSQL_PASSWORD=chatbot_pass
 MYSQL_DB=chatbot_db
 OLLAMA_URL=http://localhost:11434
-OLLAMA_MODEL=mistral
+OLLAMA_MODEL=mistral-nemo
 EMBED_MODEL=nomic-embed-text
 UPLOAD_FOLDER=uploads
 CHROMA_PATH=chroma_db
+```
+
+### Production — `.env` (racine, pour Docker Compose)
+
+Copier `.env.example` → `.env` et renseigner au minimum :
+
+```
+SECRET_KEY=<clé aléatoire forte>
+JWT_SECRET_KEY=<clé aléatoire forte>
+MYSQL_ROOT_PASSWORD=<mot de passe root>
+MYSQL_PASSWORD=<mot de passe chatbot>
 ```
 
 ## Créer le premier administrateur
