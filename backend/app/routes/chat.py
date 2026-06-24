@@ -1,3 +1,4 @@
+import traceback
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
@@ -65,7 +66,11 @@ def ask_question(session_id):
         session.title = question[:80] + ("…" if len(question) > 80 else "")
 
     # Pipeline RAG
-    result = ask(question, history=history)
+    try:
+        result = ask(question, history=history)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
     # Sauvegarde réponse assistant
     assistant_msg = Message(
