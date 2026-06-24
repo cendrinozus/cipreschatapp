@@ -149,8 +149,10 @@ def ask(question: str, history: list[dict] | None = None) -> dict:
     messages.append({"role": "user", "content": user_message})
 
     # 5. Appel LLM principal
+    print(f"[rag] Appel Ollama model={model} ({len(messages)} messages)...")
     client   = ollama.Client(host=current_app.config["OLLAMA_URL"])
     response = client.chat(model=model, messages=messages)
+    print("[rag] Réponse Ollama reçue.")
     resp_msg = response.message if hasattr(response, "message") else response["message"]
     answer   = resp_msg.content if hasattr(resp_msg, "content") else resp_msg["content"]
 
