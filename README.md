@@ -116,7 +116,16 @@ Le backend attend automatiquement que MySQL et Ollama soient prêts, puis télé
 
 ### SSL en production
 
-Le frontend génère un certificat auto-signé au build (utilisable pour les tests). Pour utiliser un vrai certificat, créer le dossier `ssl\` à la racine du projet et y placer vos fichiers :
+Le frontend génère un certificat auto-signé au build — utilisable immédiatement (le navigateur affichera un avertissement à accepter).
+
+Pour remplacer par un vrai certificat (Let's Encrypt ou autre), ajouter dans `docker-compose.yml` sous le service `frontend` :
+
+```yaml
+    volumes:
+      - ./ssl:/etc/ssl/cipreschatapp:ro
+```
+
+Puis créer le dossier `ssl\` à la racine et y placer vos fichiers **avant** de relancer :
 
 ```
 ssl\
@@ -124,7 +133,7 @@ ssl\
 └── cipreschatapp.key
 ```
 
-Docker Desktop monte ce dossier dans le conteneur, remplaçant le certificat auto-signé. Fonctionne identiquement sous Linux et Windows.
+> Ne pas monter ce volume avec un dossier vide — cela écrase les certificats générés au build et empêche Apache de démarrer.
 
 ### Commandes utiles
 
