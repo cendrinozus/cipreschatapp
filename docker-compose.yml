@@ -23,6 +23,10 @@ services:
     image: ollama/ollama:latest
     container_name: cipres_ollama
     restart: unless-stopped
+    environment:
+      OLLAMA_NUM_THREADS: 4
+      OLLAMA_KEEP_ALIVE: -1
+      OLLAMA_MAX_LOADED_MODELS: 2
     volumes:
       - ollama_data:/root/.ollama
     ports:

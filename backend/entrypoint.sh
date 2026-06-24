@@ -55,4 +55,4 @@ for model in [os.getenv('OLLAMA_MODEL', 'mistral-nemo'), os.getenv('EMBED_MODEL'
 "
 
 echo "Starting Gunicorn..."
-exec gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 300 run:app
+exec gunicorn --bind 0.0.0.0:5000 --workers 2 --timeout 600 --keep-alive 5 run:app
