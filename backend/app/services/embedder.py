@@ -18,8 +18,9 @@ def get_collection():
     return _collection
 
 def embed_text(text: str) -> list[float]:
-    model = current_app.config["EMBED_MODEL"]
-    resp  = ollama.embeddings(model=model, prompt=text)
+    model  = current_app.config["EMBED_MODEL"]
+    client = ollama.Client(host=current_app.config["OLLAMA_URL"])
+    resp   = client.embeddings(model=model, prompt=text)
     return resp["embedding"]
 
 def add_chunks(chunks: list[dict]):

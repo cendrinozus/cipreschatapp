@@ -54,7 +54,8 @@ def _route(question: str, model: str) -> dict | None:
     Retourne {"classe": ..., "recherche": ...} ou None.
     """
     try:
-        resp = ollama.chat(
+        client = ollama.Client(host=current_app.config["OLLAMA_URL"])
+        resp = client.chat(
             model=model,
             messages=[
                 {"role": "system", "content": _ROUTER_SYSTEM},
@@ -148,7 +149,8 @@ def ask(question: str, history: list[dict] | None = None) -> dict:
     messages.append({"role": "user", "content": user_message})
 
     # 5. Appel LLM principal
-    response = ollama.chat(model=model, messages=messages)
+    client   = ollama.Client(host=current_app.config["OLLAMA_URL"])
+    response = client.chat(model=model, messages=messages)
     resp_msg = response.message if hasattr(response, "message") else response["message"]
     answer   = resp_msg.content if hasattr(resp_msg, "content") else resp_msg["content"]
 
