@@ -32,18 +32,6 @@ except Exception:
 done
 echo " Ollama ready."
 
-echo "Removing legacy Ollama models..."
-python -c "
-import ollama, os
-client = ollama.Client(host=os.getenv('OLLAMA_URL', 'http://ollama:11434'))
-for legacy in ['mistral', 'mistral:latest']:
-    try:
-        client.delete(legacy)
-        print(f'  {legacy} removed.')
-    except Exception:
-        pass
-"
-
 echo "Ensuring Ollama models are available (first run may take several minutes)..."
 python -c "
 import ollama, os

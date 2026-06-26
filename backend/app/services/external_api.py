@@ -1,5 +1,6 @@
 import requests
 import urllib3
+from typing import Optional
 from flask import current_app
 
 # Certificat SSL auto-signé sur le serveur interne — vérification désactivée
@@ -44,7 +45,7 @@ def is_configured() -> bool:
     return bool(_base_url())
 
 
-def lister(classe: str, filters: dict | None = None, limit: int = 30) -> list[dict]:
+def lister(classe: str, filters: Optional[dict] = None, limit: int = 30) -> list:
     """Appelle /generic/lister — retourne les enregistrements d'une table."""
     url = _base_url()
     if not url:

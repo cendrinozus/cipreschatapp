@@ -15,7 +15,9 @@
       "Bash(grep -E \"\\\\.\\(py|js|jsx|ts|tsx|json|css|html\\)$\")",
       "WebFetch(domain:parc-auto.lacipres.org)",
       "Bash(find \"C:\\\\Users\\\\knyanda\\\\Documents\\\\Projets\\\\parc-auto\\\\parc-auto\" -type f -name \"Dockerfile*\" -o -name \"docker-compose*\" -o -name \".env*\" -o -name \"nginx*\" | head -20)",
-      "Read(//c/Users/knyanda/Documents/Projets/parc-auto/parc-auto/**)"
+      "Read(//c/Users/knyanda/Documents/Projets/parc-auto/parc-auto/**)",
+      "PowerShell(Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\Ollama\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:LOCALAPPDATA\\\\Ollama\" -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-ChildItem \"C:\\\\Users\" -Directory | ForEach-Object { Get-ChildItem \"$\\($_.FullName\\)\\\\AppData\\\\Local\\\\Programs\\\\Ollama\" -ErrorAction SilentlyContinue })"
     ]
   }
 }

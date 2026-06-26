@@ -1,5 +1,6 @@
 import json
 import ollama
+from typing import Optional
 from flask import current_app
 from app.services.embedder import search_similar
 from app.services import external_api
@@ -47,7 +48,7 @@ Classes disponibles :
 
 # ── Routeur : décide si l'API externe est nécessaire ──────────────────────────
 
-def _route(question: str, model: str) -> dict | None:
+def _route(question: str, model: str) -> Optional[dict]:
     """
     Appel rapide (JSON, temperature=0) pour décider si la question
     nécessite des données de l'API externe.
@@ -94,7 +95,7 @@ def should_cite(results: list[dict], threshold: float = 0.65) -> bool:
 
 # ── Pipeline principal ─────────────────────────────────────────────────────────
 
-def ask(question: str, history: list[dict] | None = None) -> dict:
+def ask(question: str, history: Optional[list] = None) -> dict:
     """
     Pipeline RAG + routeur API externe.
     Returns: {"answer", "sources", "cited", "api_calls"}

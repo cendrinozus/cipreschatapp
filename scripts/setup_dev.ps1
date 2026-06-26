@@ -10,16 +10,28 @@ function Write-Err  { param($msg) Write-Host $msg -ForegroundColor Red; exit 1 }
 Write-Host "=== CIPRESCHATAPP - Setup Dev (WampServer) ===" -ForegroundColor Cyan
 
 # ── Détection WampServer ──────────────────────────────────────────────────────
-$WAMP_DIR     = "C:\wamp64"
-$APACHE_VER   = "apache2.4.65"
-$MYSQL_VER    = "mysql8.4.7"
-$APACHE_CONF  = "$WAMP_DIR\bin\apache\$APACHE_VER\conf"
-$APACHE_EXTRA = "$APACHE_CONF\extra"
-$MYSQL_BIN    = "$WAMP_DIR\bin\mysql\$MYSQL_VER\bin"
+$WAMP_DIR = "C:\wamp64"
 
 if (-not (Test-Path $WAMP_DIR)) {
     Write-Err "WampServer introuvable dans $WAMP_DIR. Vérifiez le chemin d'installation."
 }
+
+# Auto-détection des versions installées
+$APACHE_VER = (Get-ChildItem "$WAMP_DIR\bin\apache" -Directory -ErrorAction SilentlyContinue |
+               Where-Object { $_.Name -match '^apache' } |
+               Sort-Object Name -Descending | Select-Object -First 1).Name
+$MYSQL_VER  = (Get-ChildItem "$WAMP_DIR\bin\mysql"  -Directory -ErrorAction SilentlyContinue |
+               Where-Object { $_.Name -match '^mysql' } |
+               Sort-Object Name -Descending | Select-Object -First 1).Name
+
+if (-not $APACHE_VER) { Write-Err "Aucun dossier Apache trouvé dans $WAMP_DIR\bin\apache\" }
+if (-not $MYSQL_VER)  { Write-Err "Aucun dossier MySQL trouvé dans $WAMP_DIR\bin\mysql\" }
+
+$APACHE_CONF  = "$WAMP_DIR\bin\apache\$APACHE_VER\conf"
+$APACHE_EXTRA = "$APACHE_CONF\extra"
+$MYSQL_BIN    = "$WAMP_DIR\bin\mysql\$MYSQL_VER\bin"
+
+Write-Ok "  Détecté : $APACHE_VER / $MYSQL_VER"
 
 # Ajouter le client mysql au PATH de session si absent
 if (-not (Get-Command mysql -ErrorAction SilentlyContinue)) {
@@ -57,6 +69,13 @@ if ([string]::IsNullOrEmpty($mysqlPass)) {
 }
 Write-Ok "✓ Base de données créée (chatbot_db)"
 
+# ── Tables Flask + admin par défaut ──────────────────────────────────────────
+Write-Step "[2b/5] Création des tables et admin par défaut..."
+Set-Location "$ROOT_DIR\backend"
+$env:FLASK_APP = "run"
+flask seed
+Write-Ok "✓ Admin créé"
+
 # ── Ollama models ─────────────────────────────────────────────────────────────
 Write-Step "[3/5] Téléchargement des modèles Ollama..."
 ollama pull mistral
@@ -74,7 +93,7 @@ Write-Step "[5/5] Configuration Apache (WampServer)..."
 
 # Copie du VirtualHost
 $destConf = "$APACHE_EXTRA\cipreschatapp-dev.conf"
-Copy-Item "$ROOT_DIR\apache\cipreschatbot-dev.conf" $destConf -Force
+Copy-Item "$ROOT_DIR\apache\cipreschatapp-dev.conf" $destConf -Force
 Write-Ok "  ✓ VirtualHost copie dans $destConf"
 
 # Ajout de l'Include dans httpd.conf si absent
@@ -146,9 +165,5 @@ Pour demarrer l'application, ouvrez 3 terminaux PowerShell :
 
   Acces : http://cipreschatapp.local (via Apache/WampServer) ou http://localhost:3000 (direct)
 
-  Creer le premier admin :
-    POST http://localhost:5000/api/auth/register
-    { "username": "admin", "email": "admin@lacipres.org", "password": "1234" }
-    Puis modifier le role via MySQL :
-    UPDATE chatbot_db.users SET role='admin' WHERE email='admin@lacipres.org';
+  Compte admin par defaut : admin@lacipres.org / 1234  <-- CHANGER en prod !
 "@
