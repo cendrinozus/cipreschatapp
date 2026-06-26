@@ -104,7 +104,13 @@ Points de vigilance spécifiques Windows :
 Utiliser le script d'installation interactif (choix du modèle LLM inclus) :
 
 ```powershell
+# Windows (PowerShell)
 .\scripts\setup_prod.ps1
+```
+
+```bash
+# Linux / macOS
+bash scripts/setup_prod.sh
 ```
 
 Ou manuellement :
