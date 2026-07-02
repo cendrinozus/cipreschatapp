@@ -139,7 +139,7 @@ Le backend attend automatiquement que MySQL et Ollama soient prêts, puis télé
 |---|---|---|
 | Frontend | https://chatbot.lacipres.org | Interface React (HTTPS) |
 | Backend API | https://chatbot.lacipres.org/api | Flask via proxy Apache |
-| phpMyAdmin | http://\<hôte\>:8181 | Administration MySQL |
+| phpMyAdmin | http://\<hôte\>:8282 | Administration MySQL |
 | Ollama | http://\<hôte\>:11434 | API LLM (interne) |
 
 ### SSL en production

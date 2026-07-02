@@ -84,7 +84,7 @@ services:
     environment:
       PMA_HOST: mysql
     ports:
-      - "8181:80"
+      - "8282:80"
     depends_on:
       mysql:
         condition: service_healthy

@@ -82,7 +82,7 @@ Write-Host @"
   Services :
     Frontend  : https://chatbot.lacipres.org
     Backend   : https://chatbot.lacipres.org/api
-    phpMyAdmin: http://<hote>:8181
+    phpMyAdmin: http://<hote>:8282
 
   Compte admin par défaut : admin@lacipres.org / 1234  <-- CHANGER !
 "@
