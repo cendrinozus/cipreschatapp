@@ -21,6 +21,11 @@ class Config:
     OLLAMA_URL   = os.getenv("OLLAMA_URL", "http://localhost:11434")
     OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "mistral")
     EMBED_MODEL  = os.getenv("EMBED_MODEL", "nomic-embed-text")
+    # Options d'inférence : num_ctx doit être identique pour tous les appels,
+    # sinon Ollama recharge le modèle à chaque changement de valeur.
+    OLLAMA_NUM_CTX     = int(os.getenv("OLLAMA_NUM_CTX", "8192"))
+    OLLAMA_NUM_THREAD  = int(os.getenv("OLLAMA_NUM_THREAD", "0"))  # 0 = auto
+    OLLAMA_NUM_PREDICT = int(os.getenv("OLLAMA_NUM_PREDICT", "1024"))
 
     # Fichiers
     UPLOAD_FOLDER  = os.getenv("UPLOAD_FOLDER", "uploads")

@@ -46,6 +46,16 @@ Classes disponibles :
 """
 
 
+def _llm_options(**extra) -> dict:
+    """Options communes : même num_ctx partout pour éviter un rechargement du modèle."""
+    cfg  = current_app.config
+    opts = {"num_ctx": cfg["OLLAMA_NUM_CTX"]}
+    if cfg["OLLAMA_NUM_THREAD"] > 0:
+        opts["num_thread"] = cfg["OLLAMA_NUM_THREAD"]
+    opts.update(extra)
+    return opts
+
+
 # ── Routeur : décide si l'API externe est nécessaire ──────────────────────────
 
 def _route(question: str, model: str) -> Optional[dict]:
@@ -63,7 +73,7 @@ def _route(question: str, model: str) -> Optional[dict]:
                 {"role": "user",   "content": f"Question : {question}"},
             ],
             format="json",
-            options={"temperature": 0},
+            options=_llm_options(temperature=0, num_predict=100),
         )
         msg     = resp.message if hasattr(resp, "message") else resp["message"]
         content = msg.content  if hasattr(msg,  "content") else msg["content"]
@@ -155,7 +165,7 @@ def ask(question: str, history: Optional[list] = None) -> dict:
     response = client.chat(
         model=model,
         messages=messages,
-        options={"num_predict": -1, "num_ctx": 8192},
+        options=_llm_options(num_predict=current_app.config["OLLAMA_NUM_PREDICT"]),
     )
     print("[rag] Réponse Ollama reçue.")
     resp_msg = response.message if hasattr(response, "message") else response["message"]
